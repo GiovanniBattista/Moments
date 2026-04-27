@@ -1,0 +1,45 @@
+# Maven / Quarkus build output
+target/
+.quarkus/
+
+# Maven wrapper (uncomment if not using mvnw)
+# .mvn/wrapper/maven-wrapper.jar
+
+# Node / Frontend
+src/main/webui/node_modules/
+src/main/webui/dist/
+src/main/webui/.vite/
+
+# Environment / secrets
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# Eclipse
+.classpath
+.project
+.settings/
+.factorypath
+bin/
+
+# VS Code
+.vscode/
+!.vscode/extensions.json
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+desktop.ini
