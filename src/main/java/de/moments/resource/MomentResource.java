@@ -2,6 +2,7 @@ package de.moments.resource;
 
 import de.moments.dto.*;
 import de.moments.service.MomentService;
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
@@ -11,6 +12,7 @@ import jakarta.ws.rs.core.Response;
 import java.util.List;
 
 @Path("/api/moments")
+@ApplicationScoped
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class MomentResource {

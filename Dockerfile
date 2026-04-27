@@ -12,7 +12,7 @@ RUN apt-get update && \
 
 # Cache Maven dependencies (layer only invalidated when pom.xml changes)
 COPY pom.xml .
-RUN mvn dependency:go-offline -q -Dquarkus.quinoa.enabled=false || true
+RUN mvn dependency:go-offline -q -Dquarkus.quinoa.enabled=false
 
 # Copy source and build
 COPY src/ src/

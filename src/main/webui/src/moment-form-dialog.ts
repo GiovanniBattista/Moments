@@ -8,6 +8,21 @@ const PRESET_COLORS = [
   '#f59e0b', '#10b981', '#06b6d4', '#3b82f6',
 ];
 
+/** Convert an ISO instant string to the value format required by <input type="datetime-local"> */
+function toDatetimeLocal(iso?: string): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  // Shift by timezone offset so the local wall-clock time appears in the input
+  const local = new Date(d.getTime() - d.getTimezoneOffset() * 60_000);
+  return local.toISOString().slice(0, 16);
+}
+
+/** Convert a datetime-local input value back to an ISO UTC string */
+function fromDatetimeLocal(local: string): string {
+  if (!local) return '';
+  return new Date(local).toISOString();
+}
+
 @customElement('moment-form-dialog')
 export class MomentFormDialog extends LitElement {
   @property({ type: String }) mode: FormMode = 'create-target';
@@ -18,6 +33,7 @@ export class MomentFormDialog extends LitElement {
   @state() private _error = '';
   @state() private _name = '';
   @state() private _targetDate = '';
+  @state() private _startTimeLocal = '';
   @state() private _imageUrl = '';
   @state() private _description = '';
   @state() private _color = '';
@@ -138,7 +154,7 @@ export class MomentFormDialog extends LitElement {
       font-size: 0.8rem;
       color: #9ca3af;
     }
-    .auto-hint {
+    .info-hint {
       background: #f0fdf4;
       border: 1px solid #bbf7d0;
       border-radius: 10px;
@@ -148,6 +164,11 @@ export class MomentFormDialog extends LitElement {
       display: flex;
       align-items: center;
       gap: 8px;
+    }
+    .info-hint.blue {
+      background: #eff6ff;
+      border-color: #bfdbfe;
+      color: #1e40af;
     }
 
     .error-banner {
@@ -195,12 +216,14 @@ export class MomentFormDialog extends LitElement {
     if (moment) {
       this._name = moment.name;
       this._targetDate = moment.targetDate ?? '';
+      this._startTimeLocal = toDatetimeLocal(moment.startTime);
       this._imageUrl = moment.imageUrl ?? '';
       this._description = moment.description ?? '';
       this._color = moment.color ?? '';
     } else {
       this._name = '';
       this._targetDate = '';
+      this._startTimeLocal = '';
       this._imageUrl = '';
       this._description = '';
       this._color = '';
@@ -223,18 +246,15 @@ export class MomentFormDialog extends LitElement {
       this._error = 'Bitte gib einen Namen ein.';
       return;
     }
-    if (this.mode === 'create-target' && !this._targetDate) {
-      this._error = 'Bitte wähle ein Datum.';
-      return;
-    }
-    if (this.mode === 'edit' && this.editMoment?.type === 'TARGET_DATE' && !this._targetDate) {
+    const isTargetType = this.mode === 'create-target' ||
+      (this.mode === 'edit' && this.editMoment?.type === 'TARGET_DATE');
+    if (isTargetType && !this._targetDate) {
       this._error = 'Bitte wähle ein Datum.';
       return;
     }
 
     this._saving = true;
     try {
-      let result;
       const common = {
         name: this._name.trim(),
         imageUrl: this._imageUrl.trim() || undefined,
@@ -242,10 +262,15 @@ export class MomentFormDialog extends LitElement {
         color: this._color || undefined,
       };
 
+      let result;
       if (this.mode === 'edit' && this.editMoment) {
+        const startTime = this.editMoment.type === 'SINCE_DATE' && this._startTimeLocal
+          ? fromDatetimeLocal(this._startTimeLocal)
+          : undefined;
         result = await apiClient.update(this.editMoment.id, {
           ...common,
           targetDate: this._targetDate || undefined,
+          startTime,
         });
       } else if (this.mode === 'create-target') {
         result = await apiClient.createTargetDate({ ...common, targetDate: this._targetDate });
@@ -262,7 +287,7 @@ export class MomentFormDialog extends LitElement {
     }
   }
 
-  private _title() {
+  private _title(): string {
     if (this.mode === 'edit') return '✏️ Moment bearbeiten';
     if (this.mode === 'create-target') return '🗓 Moment planen';
     return '🚀 Moment starten';
@@ -271,8 +296,9 @@ export class MomentFormDialog extends LitElement {
   render() {
     if (!this._open) return html`<dialog></dialog>`;
 
-    const isTarget = this.mode === 'create-target' ||
+    const isTargetType = this.mode === 'create-target' ||
       (this.mode === 'edit' && this.editMoment?.type === 'TARGET_DATE');
+    const isSinceEdit = this.mode === 'edit' && this.editMoment?.type === 'SINCE_DATE';
 
     return html`
       <dialog @close=${() => { this._open = false; }}>
@@ -289,7 +315,7 @@ export class MomentFormDialog extends LitElement {
             <input
               id="f-name"
               type="text"
-              placeholder="${isTarget ? 'z. B. Kreuzfahrt Mittelmeer' : 'z. B. Neue Gewohnheit: Joggen'}"
+              placeholder="${isTargetType ? 'z. B. Kreuzfahrt Mittelmeer' : 'z. B. Neue Gewohnheit: Joggen'}"
               .value=${this._name}
               @input=${(e: Event) => { this._name = (e.target as HTMLInputElement).value; }}
               maxlength="255"
@@ -297,7 +323,7 @@ export class MomentFormDialog extends LitElement {
             />
           </div>
 
-          ${isTarget ? html`
+          ${isTargetType ? html`
             <div class="field">
               <label class="required" for="f-date">Datum</label>
               <input
@@ -307,17 +333,28 @@ export class MomentFormDialog extends LitElement {
                 @input=${(e: Event) => { this._targetDate = (e.target as HTMLInputElement).value; }}
               />
             </div>
-          ` : this.mode === 'create-since' ? html`
-            <div class="auto-hint">
+          ` : isSinceEdit ? html`
+            <div class="field">
+              <label for="f-starttime">Gestartet am</label>
+              <input
+                id="f-starttime"
+                type="datetime-local"
+                .value=${this._startTimeLocal}
+                @input=${(e: Event) => { this._startTimeLocal = (e.target as HTMLInputElement).value; }}
+              />
+              <span class="hint">Leer lassen, um den Startzeitpunkt unverändert zu behalten.</span>
+            </div>
+          ` : html`
+            <div class="info-hint">
               ⏱ Der Startzeitpunkt wird automatisch auf jetzt gesetzt.
             </div>
-          ` : ''}
+          `}
 
           <div class="field">
             <label for="f-image">Bild-URL <span class="hint">(optional)</span></label>
             <input
               id="f-image"
-              type="url"
+              type="text"
               placeholder="https://example.com/bild.jpg"
               .value=${this._imageUrl}
               @input=${(e: Event) => { this._imageUrl = (e.target as HTMLInputElement).value; }}

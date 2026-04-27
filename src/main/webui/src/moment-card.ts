@@ -185,12 +185,13 @@ export class MomentCard extends LitElement {
     return `status-badge badge-${this.moment.status.toLowerCase()}`;
   }
 
-  private _badgeLabel() {
+  private _badgeLabel(): string {
     switch (this.moment.status) {
       case 'UPCOMING': return '🗓 Bevorstehend';
       case 'TODAY':    return '✨ Heute';
       case 'PAST':     return '📅 Vergangen';
       case 'RUNNING':  return '⏱ Läuft seit';
+      default:         return '';
     }
   }
 

@@ -75,3 +75,5 @@ app-root          – loads all moments, groups into sections, owns refresh time
 ### Test profile
 
 `%test.quarkus.quinoa.enabled=false` disables the frontend build during tests. Tests use `@QuarkusTest` with RestAssured against a clean H2 schema (no demo data).
+
+Each test class uses `@BeforeEach @Transactional void cleanDb() { Moment.deleteAll(); }` to ensure full test isolation — the shared in-memory H2 would otherwise accumulate data across tests.
