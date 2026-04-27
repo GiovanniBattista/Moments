@@ -1,7 +1,7 @@
 package de.moments.entity;
 
 import de.moments.enums.MomentType;
-import io.quarkus.hibernate.orm.panache.PanacheEntity;
+import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -11,7 +11,11 @@ import java.time.LocalDate;
 
 @Entity
 @Table(name = "moment")
-public class Moment extends PanacheEntity {
+public class Moment extends PanacheEntityBase {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    public Long id;
 
     @NotBlank
     @Column(nullable = false)
