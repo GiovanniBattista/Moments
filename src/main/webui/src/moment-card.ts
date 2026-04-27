@@ -17,7 +17,7 @@ function nameToColor(name: string): string {
 function formatDate(dateStr?: string): string {
   if (!dateStr) return '';
   const d = new Date(dateStr);
-  return d.toLocaleDateString('de-DE', { day: '2-digit', month: 'long', year: 'numeric' });
+  return d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
 @customElement('moment-card')
