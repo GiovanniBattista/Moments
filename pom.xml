@@ -16,6 +16,7 @@
         <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
         <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
         <quarkus.platform.version>3.17.7</quarkus.platform.version>
+        <quarkus.quinoa.version>2.5.0</quarkus.quinoa.version>
         <skipITs>true</skipITs>
         <surefire-plugin.version>3.5.2</surefire-plugin.version>
     </properties>
@@ -35,7 +36,7 @@
     <dependencies>
         <dependency>
             <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-resteasy-reactive-jackson</artifactId>
+            <artifactId>quarkus-rest-jackson</artifactId>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
@@ -54,8 +55,9 @@
             <artifactId>quarkus-hibernate-validator</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.quarkus</groupId>
+            <groupId>io.quarkiverse.quinoa</groupId>
             <artifactId>quarkus-quinoa</artifactId>
+            <version>${quarkus.quinoa.version}</version>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>

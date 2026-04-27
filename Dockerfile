@@ -10,13 +10,10 @@ RUN apt-get update && \
     apt-get install -y nodejs && \
     rm -rf /var/lib/apt/lists/*
 
-# Cache Maven dependencies (layer only invalidated when pom.xml changes)
+# Copy source and build (Maven downloads dependencies during package)
 COPY pom.xml .
-RUN mvn dependency:go-offline -q -Dquarkus.quinoa.enabled=false
-
-# Copy source and build
 COPY src/ src/
-RUN mvn package -DskipTests
+RUN mvn package -DskipTests -B
 
 # Stage 2: Lean runtime image
 FROM eclipse-temurin:21-jre-alpine
