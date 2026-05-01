@@ -17,7 +17,7 @@ Eine private, mobile-first WebApp für persönliche Momente – Dinge, auf die d
 | Schicht     | Technologie                                 |
 |-------------|---------------------------------------------|
 | Backend     | Java 21, Quarkus 3.17, RESTEasy Reactive    |
-| Persistenz  | Hibernate ORM + Panache, H2 (in-memory)     |
+| Persistenz  | Hibernate ORM + Panache, PostgreSQL         |
 | Migration   | Flyway                                      |
 | Frontend    | Lit 3, TypeScript, Vite                     |
 | Build       | Maven 3.9, Quinoa (Frontend-Integration)    |
@@ -28,29 +28,52 @@ Eine private, mobile-first WebApp für persönliche Momente – Dinge, auf die d
 - Java 21+
 - Maven 3.9+
 - Node.js 20+ und npm (für Frontend-Build)
+- Docker (für lokale PostgreSQL-Datenbank und Tests)
 
 ## Lokaler Start
 
 ```bash
-# 1. Abhängigkeiten installieren (Frontend)
-cd src/main/webui && npm install && cd ../../..
+# 0. Einmalig den Maven Wrapper generieren
+mvn wrapper:wrapper
 
-# 2. Dev-Modus starten (Backend + Vite Dev-Server)
+# 1. PostgreSQL-Container starten
+docker compose -f docker-compose.dev.yml up -d
+
+# 2. Abhängigkeiten installieren (Frontend, nur beim ersten Mal)
+cd src/main/webui && npm install && cd ../../..
+npm run dev
+
+# 3. Dev-Modus starten (Backend + Vite Dev-Server)
 ./mvnw quarkus:dev
+
 ```
+
+
 
 Quarkus läuft auf **http://localhost:8080**, Vite Dev-Server auf **http://localhost:5173**.  
 Im Browser **http://localhost:8080** öffnen – Quinoa proxied den Frontend-Traffic automatisch.
 
-## Start mit Docker
+Die Datenbank ist unter `localhost:5432` erreichbar (User: `moments`, Passwort: `moments`, DB: `momentsdb`).
+
+## Start mit Docker (Produktion)
 
 ```bash
-# Image bauen und Container starten
-docker compose up --build
+# 1. .env.example nach .env kopieren und Werte eintragen
+cp .env.example .env
 
-# App läuft auf
-open http://localhost:8080
+# 2. Image bauen und Container starten
+docker compose up --build
 ```
+
+Die App verbindet sich über die Umgebungsvariablen in `.env` mit einer externen PostgreSQL-Instanz.
+
+| Variable     | Beschreibung              | Beispiel           |
+|--------------|---------------------------|--------------------|
+| `DB_HOST`    | PostgreSQL-Host           | `192.168.1.100`    |
+| `DB_PORT`    | PostgreSQL-Port           | `5432`             |
+| `DB_NAME`    | Datenbankname             | `momentsdb`        |
+| `DB_USER`    | Benutzername              | `moments`          |
+| `DB_PASSWORD`| Passwort                  | `secret`           |
 
 ## API-Endpunkte
 
@@ -104,7 +127,9 @@ moments/
 ├── src/test/java/de/moments/
 │   └── MomentResourceTest.java          # Integrationstests (@QuarkusTest)
 ├── Dockerfile
-├── docker-compose.yml
+├── docker-compose.yml          # Produktion (externe PostgreSQL via .env)
+├── docker-compose.dev.yml      # Lokale Entwicklung (PostgreSQL-Container)
+├── .env.example                # Vorlage für Produktions-Umgebungsvariablen
 └── README.md
 ```
 
@@ -114,11 +139,10 @@ moments/
 ./mvnw test
 ```
 
-Die Tests nutzen H2 in-memory ohne Demo-Daten (Profil `%test`).
+Quarkus DevServices startet automatisch einen temporären PostgreSQL-Container für die Testlaufzeit – Docker muss dafür laufen. Demo-Daten werden nicht geladen (Profil `%test`).
 
 ## Nächste sinnvolle Features
 
-- **Persistente Datenbank** – PostgreSQL statt H2 für Produktionsbetrieb
 - **Push-Benachrichtigungen** – Erinnerung am Tag des Moments
 - **Bildupload** – Direkte Datei-Upload statt URL
 - **Sortierung & Filter** – Nach Status, Datum oder Name

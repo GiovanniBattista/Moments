@@ -10,8 +10,8 @@ VALUES
     ('Konzert Lieblingsband', 'TARGET_DATE', '2026-06-20', NULL,
      'Open-Air-Konzert im Stadtpark', '#f59e0b', NOW(), NOW()),
 
-    ('Neue Gewohnheit: Joggen', 'SINCE_DATE', NULL, DATEADD('DAY', -12, NOW()),
+    ('Neue Gewohnheit: Joggen', 'SINCE_DATE', NULL, NOW() - INTERVAL '12 days',
      'Jeden Morgen 30 Minuten laufen', '#10b981', NOW(), NOW()),
 
-    ('Projekt Hauskauf', 'SINCE_DATE', NULL, DATEADD('DAY', -47, NOW()),
+    ('Projekt Hauskauf', 'SINCE_DATE', NULL, NOW() - INTERVAL '47 days',
      'Auf der Suche nach dem perfekten Zuhause', '#8b5cf6', NOW(), NOW());

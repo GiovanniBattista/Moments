@@ -43,3 +43,6 @@ bin/
 # Windows
 Thumbs.db
 desktop.ini
+
+#Eclipse
+.metadata/
