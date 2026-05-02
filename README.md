@@ -33,25 +33,17 @@ Eine private, mobile-first WebApp für persönliche Momente – Dinge, auf die d
 ## Lokaler Start
 
 ```bash
-# 0. Einmalig den Maven Wrapper generieren
-mvn wrapper:wrapper
-
 # 1. PostgreSQL-Container starten
 docker compose -f docker-compose.dev.yml up -d
 
-# 2. Abhängigkeiten installieren (Frontend, nur beim ersten Mal)
+# 2. Frontend-Abhängigkeiten installieren (nur beim ersten Mal)
 cd src/main/webui && npm install && cd ../../..
-npm run dev
 
-# 3. Dev-Modus starten (Backend + Vite Dev-Server)
-./mvnw quarkus:dev
-
+# 3. Dev-Modus starten
+mvn quarkus:dev
 ```
 
-
-
-Quarkus läuft auf **http://localhost:8080**, Vite Dev-Server auf **http://localhost:5173**.  
-Im Browser **http://localhost:8080** öffnen – Quinoa proxied den Frontend-Traffic automatisch.
+Im Browser **http://localhost:8080** öffnen. Quinoa startet den Vite Dev-Server automatisch im Hintergrund.
 
 Die Datenbank ist unter `localhost:5432` erreichbar (User: `moments`, Passwort: `moments`, DB: `momentsdb`).
 
@@ -64,6 +56,17 @@ cp .env.example .env
 # 2. Image bauen und Container starten
 docker compose up --build
 ```
+
+First, create your own builder if not existing:
+`docker buildx create --name multiplatform --bootstrap --use --config=multiplatform_build.toml`
+If your cloud uses a different CPU architecture than your development
+machine (e.g., you are on a Mac M1 and your cloud provider is amd64),
+you'll want to build the image for that platform, e.g.:
+`docker buildx build --platform linux/arm64 -t 10.0.1.10:5000/moments:1.0.0 --push .`
+
+Consult Docker's [getting started](https://docs.docker.com/go/get-started-sharing/)
+docs for more detail on building and pushing.
+
 
 Die App verbindet sich über die Umgebungsvariablen in `.env` mit einer externen PostgreSQL-Instanz.
 
