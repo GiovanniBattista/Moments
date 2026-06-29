@@ -235,10 +235,10 @@ export class AppRoot extends LitElement {
         <div class="app-subtitle">Deine besonderen Momente auf einen Blick</div>
         <div class="header-actions">
           <button class="btn-action" @click=${() => this._openCreate('create-target')}>
-            🗓 Moment planen
+            🗓 Planen
           </button>
           <button class="btn-action" @click=${() => this._openCreate('create-since')}>
-            🚀 Moment starten
+            🚀 Starten
           </button>
         </div>
       </header>

@@ -1,15 +1,22 @@
 services:
   moments:
-    build: .
-    ports:
-      - "8080:8080"
+    container_name: moments
     environment:
+      - TZ='Europe/Vienna'
       - QUARKUS_HTTP_PORT=8080
       - DB_HOST=${DB_HOST}
       - DB_PORT=${DB_PORT:-5432}
       - DB_NAME=${DB_NAME:-momentsdb}
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
+    labels:
+      - diun.enable=true
+      - traefik.enable=true
+      - traefik.http.routers.moments.rule=Host('moments.services.home')
+      - traefik.http.routers.moments.entrypoints=websecure
+      - traefik.http.routers.moments.tls=true
+      - traefik.http.services.moments.loadbalancer.server.port=8080
+      - traefik.http.routers.moments.middlewares=sec-headers
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:8080/q/health/live"]
       interval: 15s
@@ -17,3 +24,9 @@ services:
       retries: 5
       start_period: 30s
     restart: unless-stopped
+    networks:
+      traefik:
+
+networks:
+  traefik:
+    external: true
